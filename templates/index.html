@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Newton-Raphson Root Finding | Numerical Methods PIT</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"], ["$", "$"]], displayMath: [["\\[", "\\]"]] },
+      svg: { fontCache: "global" }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar">
+      <a href="#home" class="brand">
+        <span class="brand-logo">N</span>
+        <span><strong>Numerical Methods</strong><small>PIT Project</small></span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open navigation">☰</button>
+      <div class="nav-links" id="navLinks">
+        <a href="#home" data-section="home">Home</a>
+        <a href="#overview" data-section="overview">Overview</a>
+        <a href="#procedure" data-section="procedure">Procedure</a>
+        <a href="#examples" data-section="examples">Examples</a>
+        <a href="#calculator" data-section="calculator">Calculator</a>
+        <a href="#references" data-section="references">References</a>
+      </div>
+
+      <div class="method-menu">
+        <button class="method-menu-btn" id="methodMenuBtn" type="button" aria-label="Open other numerical method websites" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="method-menu-dropdown" id="methodMenuDropdown">
+          <p>Menu</p>
+          <details class="method-submenu">
+            <summary>
+              <span>More NM Websites</span>
+              <strong>›</strong>
+            </summary>
+            <div class="method-submenu-list">
+              <a class="nm-site-link" href="https://gentrolizo-lu-decomposition.vercel.app/#calculator" target="_blank" rel="noopener noreferrer"><span>LU Decomposition</span><small>Made by: Jazzel Jean A. Gentrolizo</small></a>
+            </div>
+          </details>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-text">
+          <p class="eyebrow">Numerical Methods PIT</p>
+          <h1>Newton-Raphson<br />Root Finding</h1>
+          <p class="hero-description">A responsive Flask web app for discussing, solving, and calculating roots of nonlinear equations using Newton's method.</p>
+          <div class="student-info">
+            <p><span>👤</span> Raniel P. Beronilla</p>
+            <p><span>🎓</span> BS Computer Engineering - 2B</p>
+          </div>
+          <div class="hero-buttons">
+            <a href="#calculator" class="btn primary">Try Calculator</a>
+            <a href="#examples" class="btn secondary">View Examples</a>
+          </div>
+        </div>
+        <div class="formula-card">
+          <p>Newton-Raphson Formula</p>
+          <div class="formula-line"></div>
+          <div class="formula">\[x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}\]</div>
+          <small>Each tangent line gives the next approximation until the values are close enough to the root.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="overview">
+      <div class="section-heading"><span class="section-number">1</span><div><h2>What is Newton-Raphson?</h2><p>A root-finding method that uses tangents to improve an initial guess.</p></div></div>
+      <article class="creator-card">
+        <div class="creator-visual"><img src="{{ url_for('static', filename='images/creators.svg') }}" alt="Newton and Raphson illustration" /></div>
+        <div class="creator-content">
+          <h3>Newton-Raphson Method</h3>
+          <p>The Newton-Raphson method is an iterative numerical technique used to approximate the solution of \( f(x)=0 \). It starts with an initial guess, evaluates the function and its derivative, then repeatedly improves the estimate using tangent-line behavior.</p>
+          <details class="history-dropdown">
+            <summary>Read short history and applications</summary>
+            <div class="history-content">
+              <h4>Short History</h4>
+              <p>The method is associated with Sir Isaac Newton, who developed tangent-based approximation ideas, and Joseph Raphson, who presented a clearer iterative algebraic form. Today, it is commonly called the Newton-Raphson method.</p>
+              <h4>Where It Is Used</h4>
+              <ul>
+                <li><strong>Engineering:</strong> solving nonlinear equations in circuits, control systems, structural analysis, and fluid dynamics.</li>
+                <li><strong>Computation:</strong> used in scientific computing, optimization, simulations, and equation solvers.</li>
+                <li><strong>Modeling:</strong> useful in physics, chemistry, economics, and mathematical models.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="procedure">
+      <div class="section-heading"><span class="section-number">2</span><div><h2>Step-by-Step Procedure</h2><p>The method repeats a tangent-based formula until the tolerance is satisfied.</p></div></div>
+      <div class="procedure-grid">
+        <article class="step-card"><span>1</span><h3>Choose an initial guess</h3><p>Select \(x_0\), preferably close to the expected root of \(f(x)=0\).</p></article>
+        <article class="step-card"><span>2</span><h3>Evaluate values</h3><p>Compute \(f(x_n)\) and \(f'(x_n)\).</p></article>
+        <article class="step-card"><span>3</span><h3>Compute next approximation</h3><p>Use:</p><div class="mini-formula">\[x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}\]</div></article>
+        <article class="step-card"><span>4</span><h3>Check tolerance</h3><p>Stop when \(|x_{n+1}-x_n|<\varepsilon\). This project uses \(\varepsilon=10^{-6}\).</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="examples">
+      <div class="section-heading"><span class="section-number">3</span><div><h2>Two Fully Worked Examples</h2><p>Dropdown tabs with complete step-by-step MathJax content and \(10^{-6}\) tolerance.</p></div></div>
+      <div class="example-accordion">
+        <details class="example-details">
+          <summary><span>Example 1</span> Solve \(f(x)=x^3-x-2\)</summary>
+          <div class="example-body">
+            <p><strong>Given:</strong></p>
+            \[f(x)=x^3-x-2\]
+            \[f'(x)=3x^2-1\]
+            \[x_0=1.5,\qquad \varepsilon=10^{-6}\]
+            <div class="solution-box">
+              <h4>Iteration Formula</h4>
+              \[x_{n+1}=x_n-\frac{x_n^3-x_n-2}{3x_n^2-1}\]
+              <h4>First Iteration</h4>
+              \[f(1.5)=1.5^3-1.5-2=-0.125\]
+              \[f'(1.5)=3(1.5)^2-1=5.75\]
+              \[x_1=1.5-\frac{-0.125}{5.75}=1.5217391304\]
+            </div>
+            <div class="table-wrap"><table><thead><tr><th>n</th><th>\(x_n\)</th><th>\(f(x_n)\)</th><th>\(f'(x_n)\)</th><th>\(x_{n+1}\)</th><th>Error</th></tr></thead><tbody><tr><td>0</td><td>1.500000</td><td>-0.125000</td><td>5.750000</td><td>1.521739</td><td>2.1739e-02</td></tr><tr><td>1</td><td>1.521739</td><td>0.002137</td><td>5.947070</td><td>1.521380</td><td>3.5930e-04</td></tr><tr><td>2</td><td>1.521380</td><td>0.000001</td><td>5.943789</td><td>1.521380</td><td>9.9160e-08</td></tr></tbody></table></div>
+            <p class="answer-pill">Approximate root: \(x\approx1.521380\)</p>
+          </div>
+        </details>
+        <details class="example-details">
+          <summary><span>Example 2</span> Solve \(f(x)=\cos(x)-x\)</summary>
+          <div class="example-body">
+            <p><strong>Given:</strong></p>
+            \[f(x)=\cos(x)-x\]
+            \[f'(x)=-\sin(x)-1\]
+            \[x_0=0.5,\qquad \varepsilon=10^{-6}\]
+            <div class="solution-box">
+              <h4>Iteration Formula</h4>
+              \[x_{n+1}=x_n-\frac{\cos(x_n)-x_n}{-\sin(x_n)-1}\]
+              <h4>First Iteration</h4>
+              \[f(0.5)=\cos(0.5)-0.5=0.377582562\]
+              \[f'(0.5)=-\sin(0.5)-1=-1.479425539\]
+              \[x_1=0.5-\frac{0.377582562}{-1.479425539}=0.7552224171\]
+            </div>
+            <div class="table-wrap"><table><thead><tr><th>n</th><th>\(x_n\)</th><th>\(f(x_n)\)</th><th>\(f'(x_n)\)</th><th>\(x_{n+1}\)</th><th>Error</th></tr></thead><tbody><tr><td>0</td><td>0.500000</td><td>0.377583</td><td>-1.479426</td><td>0.755222</td><td>2.5522e-01</td></tr><tr><td>1</td><td>0.755222</td><td>-0.027103</td><td>-1.685451</td><td>0.739142</td><td>1.6081e-02</td></tr><tr><td>2</td><td>0.739142</td><td>-0.000095</td><td>-1.673654</td><td>0.739085</td><td>5.6530e-05</td></tr><tr><td>3</td><td>0.739085</td><td>-0.000000</td><td>-1.673612</td><td>0.739085</td><td>7.0560e-10</td></tr></tbody></table></div>
+            <p class="answer-pill">Approximate root: \(x\approx0.739085\)</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="section" id="calculator">
+      <div class="section-heading"><span class="section-number">4</span><div><h2>Interactive Calculator</h2><p>Enter \(f\), auto-calculate or type \(f'\), then solve using Newton-Raphson.</p></div></div>
+      <div class="calculator-layout">
+        <form class="calculator-card" id="calculatorForm">
+          <div class="input-help"><p>Choose a variable: <code>x</code>, <code>y</code>, or <code>z</code>. Use <code>^</code> or <code>**</code> for powers. Allowed functions include <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>sqrt</code>, <code>log</code>, <code>ln</code>, <code>exp</code>, and <code>abs</code>.</p></div>
+          <label for="variableInput">Variable</label>
+          <select id="variableInput" name="variable"><option value="x">x</option><option value="y">y</option><option value="z">z</option></select>
+          <div class="symbol-pad">
+            <button type="button" data-insert="x">x</button><button type="button" data-insert="y">y</button><button type="button" data-insert="z">z</button><button type="button" data-insert="^2">x²</button><button type="button" data-insert="^3">x³</button><button type="button" data-insert="sqrt(">√</button><button type="button" data-insert="sin(">sin</button><button type="button" data-insert="cos(">cos</button><button type="button" data-insert="tan(">tan</button><button type="button" data-insert="log(">log</button><button type="button" data-insert="ln(">ln</button><button type="button" data-insert="exp(">exp</button><button type="button" data-insert="pi">π</button><button type="button" data-insert=")">)</button>
+          </div>
+          <label for="functionInput">Function \( f \)</label>
+          <input id="functionInput" name="function" type="text" value="x^3 - x - 2" required />
+          <div class="derivative-row">
+            <label for="derivativeInput">Derivative \( f' \)</label>
+            <button type="button" class="small-action" id="deriveBtn">Auto-calculate derivative</button>
+          </div>
+          <input id="derivativeInput" name="derivative" type="text" value="3*x^2 - 1" required />
+          <details class="formula-dropdown" id="derivativeDetails"><summary>Show derivative formula</summary><div id="derivativeFormula">\[\frac{d}{dx}(x^3-x-2)=3x^2-1\]</div></details>
+          <div class="form-row"><div><label for="initialGuessInput">Initial guess</label><input id="initialGuessInput" name="initial_guess" type="number" step="any" value="1.5" required /></div><div><label for="toleranceInput">Tolerance \(\varepsilon\)</label><input id="toleranceInput" name="tolerance" type="number" step="any" value="0.000001" required /></div></div>
+          <label for="maxIterationsInput">Maximum iterations</label>
+          <input id="maxIterationsInput" name="max_iterations" type="number" min="1" value="25" required />
+          <button type="submit" class="calculate-btn">Calculate Root</button>
+        </form>
+        <div class="result-column">
+          <div class="result-card" id="resultCard"><h3>Result</h3><p class="muted">Your calculation result and iteration table will appear here.</p></div>
+          <div class="history-card" id="historyCard"><h3>Saved Solution History</h3><p class="muted">Saved results will appear here after clicking Save History.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="references"><div class="references-card"><h2>References</h2><ul><li>Chapra, S. C., & Canale, R. P. <em>Numerical Methods for Engineers.</em></li><li>Burden, R. L., Faires, J. D., & Burden, A. M. <em>Numerical Analysis.</em></li></ul></div></section>
+  </main>
+  <footer class="footer"><p>© 2026 Raniel P. Beronilla | Numerical Methods PIT | BS Computer Engineering - 2B</p></footer>
+</body>
+</html>
