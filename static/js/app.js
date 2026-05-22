@@ -1156,3 +1156,135 @@ async function printData(data, options) {
 
   openNormalPrintPreview(printableHtml);
 }
+
+
+/* Hanging page theme changer */
+const themeFlipBtn = document.getElementById("themeFlipBtn");
+const THEME_KEY = "nr_selected_palette_theme";
+const themeOrder = ["theme-bamboo", "theme-moss", "theme-teal", "theme-sage"];
+
+function applyTheme(themeName) {
+  document.body.classList.remove(...themeOrder);
+  document.body.classList.add(themeName);
+  localStorage.setItem(THEME_KEY, themeName);
+}
+
+function showThemeBloom() {
+  const oldBloom = document.querySelector(".theme-bloom-effect");
+  if (oldBloom) oldBloom.remove();
+
+  const bloom = document.createElement("div");
+  bloom.className = "theme-bloom-effect";
+  bloom.innerHTML = `
+    <span class="bloom-stem"></span>
+    <span class="bloom-leaf leaf-1"></span>
+    <span class="bloom-leaf leaf-2"></span>
+    <span class="bloom-leaf leaf-3"></span>
+    <span class="bloom-fruit"></span>
+    <span class="bloom-spark spark-1"></span>
+    <span class="bloom-spark spark-2"></span>
+    <span class="bloom-spark spark-3"></span>
+  `;
+
+  document.body.appendChild(bloom);
+  window.setTimeout(() => bloom.remove(), 3600);
+}
+
+function nextThemeName() {
+  const current = themeOrder.find((theme) => document.body.classList.contains(theme)) || "theme-bamboo";
+  const index = themeOrder.indexOf(current);
+  return themeOrder[(index + 1) % themeOrder.length];
+}
+
+applyTheme(localStorage.getItem(THEME_KEY) || "theme-bamboo");
+
+if (themeFlipBtn) {
+  themeFlipBtn.addEventListener("click", () => {
+    if (themeFlipBtn.dataset.busy === "true") return;
+
+    themeFlipBtn.dataset.busy = "true";
+    const nextTheme = nextThemeName();
+
+    themeFlipBtn.classList.add("is-flipping");
+    applyTheme(nextTheme);
+    showThemeBloom();
+
+    setTimeout(() => {
+      themeFlipBtn.classList.remove("is-flipping");
+      themeFlipBtn.dataset.busy = "false";
+    }, 650);
+  });
+}
+
+/* Detailed discussion side-page drawer */
+const discussionOpenBtn = document.getElementById("discussionOpenBtn");
+const discussionOverlay = document.getElementById("discussionOverlay");
+const discussionCloseBtn = document.getElementById("discussionCloseBtn");
+const discussionBackdrop = document.getElementById("discussionBackdrop");
+
+let discussionHeaderTimer = null;
+
+function openDiscussionDrawer() {
+  if (!discussionOverlay) return;
+
+  const discussionDrawer = document.getElementById("discussionDrawer");
+
+  if (discussionHeaderTimer) {
+    clearTimeout(discussionHeaderTimer);
+    discussionHeaderTimer = null;
+  }
+
+  if (discussionDrawer) {
+    discussionDrawer.classList.remove("header-compact");
+  }
+
+  discussionOverlay.classList.add("open");
+  discussionOverlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("discussion-open");
+  if (discussionOpenBtn) discussionOpenBtn.setAttribute("aria-expanded", "true");
+  refreshMath(discussionOverlay);
+
+  discussionHeaderTimer = setTimeout(() => {
+    if (discussionOverlay.classList.contains("open") && discussionDrawer) {
+      discussionDrawer.classList.add("header-compact");
+    }
+  }, 5000);
+}
+
+function closeDiscussionDrawer() {
+  if (!discussionOverlay) return;
+
+  const discussionDrawer = document.getElementById("discussionDrawer");
+
+  if (discussionHeaderTimer) {
+    clearTimeout(discussionHeaderTimer);
+    discussionHeaderTimer = null;
+  }
+
+  if (discussionDrawer) {
+    discussionDrawer.classList.remove("header-compact");
+  }
+
+  discussionOverlay.classList.remove("open");
+  discussionOverlay.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("discussion-open");
+  if (discussionOpenBtn) discussionOpenBtn.setAttribute("aria-expanded", "false");
+}
+
+if (discussionOpenBtn) {
+  discussionOpenBtn.addEventListener("click", openDiscussionDrawer);
+}
+
+if (discussionCloseBtn) {
+  discussionCloseBtn.addEventListener("click", closeDiscussionDrawer);
+}
+
+if (discussionBackdrop) {
+  discussionBackdrop.addEventListener("click", closeDiscussionDrawer);
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && discussionOverlay?.classList.contains("open")) {
+    closeDiscussionDrawer();
+  }
+});

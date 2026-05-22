@@ -46,11 +46,30 @@
               <strong>›</strong>
             </summary>
             <div class="method-submenu-list">
-              <a class="nm-site-link" href="https://gentrolizo-lu-decomposition.vercel.app/#calculator" target="_blank" rel="noopener noreferrer"><span>LU Decomposition</span><small>Made by: Jazzel Jean A. Gentrolizo</small></a>
+              <a class="nm-site-link lu-sparkle-link" href="https://gentrolizo-lu-decomposition.vercel.app" target="_blank" rel="noopener noreferrer">
+                <span>LU Decomposition</span>
+                <small>Made by: Jazzel Jean A. Gentrolizo</small>
+              </a>
+              <a class="nm-site-link" href="https://delacruzcpe2bnmpit.vercel.app/?fbclid=IwY2xjawR9hbhleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAEwAAEef1n1l3M8YJT3RDALNZENivjL9S_scAX6bjTI1nGUAdaJagakydeOYtft9VY_aem_WoVukVEbrwOdr10rpyZdcQ" target="_blank" rel="noopener noreferrer">
+                <span>Numerical Methods Website</span>
+                <small>Made by: Antonio Rafael Dela Cruz</small>
+              </a>
+              <a class="nm-site-link" href="https://finite-differences-calculator.vercel.app" target="_blank" rel="noopener noreferrer">
+                <span>Finite Differences Calculator</span>
+                <small>Made by: Miguel Estenzo</small>
+              </a>
             </div>
           </details>
         </div>
       </div>
+
+      <button class="theme-corner-btn" id="themeFlipBtn" type="button" aria-label="Change website color theme" title="Change color theme">
+        <span class="corner-paper corner-paper-back"></span>
+        <span class="corner-paper corner-paper-front">
+          <span class="corner-paper-curl"></span>
+          <span class="corner-paper-mark">✦</span>
+        </span>
+      </button>
     </nav>
   </header>
 
@@ -103,6 +122,247 @@
         </div>
       </article>
     </section>
+
+
+    <section class="discussion-pull-section" aria-label="Detailed Newton-Raphson discussion opener">
+      <button class="discussion-pull-tab discussion-note-button" id="discussionOpenBtn" type="button" aria-controls="discussionDrawer" aria-expanded="false">
+        <span class="pull-tab-copy">
+          <span class="pull-tab-text">Detailed discussion</span>
+          <span class="pull-tab-subtext">Open the complete guide: concepts, variables, formulas, and solving flow.</span>
+        </span>
+        <span class="pull-tab-arrow">Read</span>
+      </button>
+    </section>
+
+    <div class="discussion-overlay" id="discussionOverlay" aria-hidden="true">
+      <div class="discussion-backdrop" id="discussionBackdrop"></div>
+      <aside class="discussion-drawer" id="discussionDrawer" role="dialog" aria-modal="true" aria-labelledby="discussionTitle">
+        <button class="discussion-close" id="discussionCloseBtn" type="button" aria-label="Close detailed discussion">×</button>
+
+        <div class="discussion-paper-tabs" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="discussion-drawer-inner">
+          <p class="discussion-kicker">Complete Study Guide</p>
+          <h2 id="discussionTitle">Detailed Newton-Raphson Discussion</h2>
+          <p class="discussion-lead">
+            This discussion explains the whole idea behind Newton-Raphson root finding,
+            from the meaning of a root to the purpose of every variable in the iteration table.
+            Read this before using the calculator so the output makes sense instead of looking
+            like random numbers.
+          </p>
+
+          <div class="discussion-scroll">
+            <section class="discussion-topic">
+              <h3>1. What is root finding?</h3>
+              <p>
+                Root finding means looking for an input value that makes a function equal to zero.
+                In mathematical form, the problem is written as:
+              </p>
+              <div class="discussion-formula">\[f(x)=0\]</div>
+              <p>
+                A value that satisfies this equation is called a <strong>root</strong>,
+                <strong>zero</strong>, or <strong>solution</strong> of the equation. On a graph,
+                a real root is usually seen where the curve crosses or touches the x-axis.
+              </p>
+              <div class="discussion-note">
+                Example: If \(f(x)=x^3-x-2\), we are not only evaluating the function.
+                We are searching for the value of \(x\) that makes \(x^3-x-2=0\).
+              </div>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>2. Why use a numerical method?</h3>
+              <p>
+                Some equations are easy to solve exactly, such as simple linear or quadratic equations.
+                However, many engineering and science equations are nonlinear, complicated, or impossible
+                to solve neatly by hand. Numerical methods solve this by producing approximations that
+                become more accurate with each iteration.
+              </p>
+              <p>
+                Newton-Raphson is popular because, when the starting guess is good and the derivative is
+                not zero, it usually converges very quickly compared with slower bracketing methods.
+              </p>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>3. The main Newton-Raphson formula</h3>
+              <div class="discussion-formula">\[x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}\]</div>
+              <p>
+                The formula starts from the current estimate \(x_n\), then subtracts a correction term
+                \(\frac{f(x_n)}{f'(x_n)}\). This correction is based on the tangent line at the current point.
+                The x-intercept of that tangent line becomes the next estimate \(x_{n+1}\).
+              </p>
+              <p>
+                In simple terms, the method asks: <em>“If I draw the tangent line here, where does that
+                tangent line hit the x-axis?”</em> That new x-value becomes the next guess.
+              </p>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>4. Where the formula comes from</h3>
+              <p>
+                At the point \((x_n, f(x_n))\), the tangent line has slope \(f'(x_n)\). Using the point-slope
+                form of a line:
+              </p>
+              <div class="discussion-formula">\[y-f(x_n)=f'(x_n)(x-x_n)\]</div>
+              <p>
+                The next approximation is where the tangent line crosses the x-axis, so set \(y=0\) and
+                solve for \(x\):
+              </p>
+              <div class="discussion-formula">\[0-f(x_n)=f'(x_n)(x_{n+1}-x_n)\]</div>
+              <div class="discussion-formula">\[x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}\]</div>
+            </section>
+
+            <section class="discussion-topic variable-topic">
+              <h3>5. Variable names and their purposes</h3>
+              <div class="variable-grid">
+                <div><strong>\(f(x)\)</strong><span>The original equation or function. The goal is to make this equal to zero.</span></div>
+                <div><strong>\(f'(x)\)</strong><span>The derivative of the function. It tells the slope of the tangent line.</span></div>
+                <div><strong>\(x_0\)</strong><span>The first guess or starting estimate chosen by the user.</span></div>
+                <div><strong>\(x_n\)</strong><span>The current approximation during iteration number \(n\).</span></div>
+                <div><strong>\(x_{n+1}\)</strong><span>The next approximation produced by the formula.</span></div>
+                <div><strong>\(n\)</strong><span>The iteration counter, usually starting at 0.</span></div>
+                <div><strong>\(\varepsilon\)</strong><span>The tolerance. This is the accepted error limit for stopping.</span></div>
+                <div><strong>Error</strong><span>Usually computed as \(|x_{n+1}-x_n|\). Smaller error means the estimates are stabilizing.</span></div>
+              </div>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>6. Complete solving flow</h3>
+              <ol class="discussion-steps">
+                <li><strong>Rewrite the problem:</strong> make sure the equation is in the form \(f(x)=0\).</li>
+                <li><strong>Differentiate:</strong> find \(f'(x)\), because Newton-Raphson needs the slope.</li>
+                <li><strong>Choose a starting value:</strong> pick \(x_0\), preferably near the expected root.</li>
+                <li><strong>Evaluate:</strong> compute \(f(x_n)\) and \(f'(x_n)\) using the current value.</li>
+                <li><strong>Substitute:</strong> place those values into \(x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}\).</li>
+                <li><strong>Compute the error:</strong> use \(|x_{n+1}-x_n|\).</li>
+                <li><strong>Decide:</strong> if the error is less than \(10^{-6}\), stop. If not, repeat using \(x_{n+1}\) as the new \(x_n\).</li>
+              </ol>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>7. Why tolerance matters</h3>
+              <p>
+                The tolerance controls how close two consecutive estimates must be before the method stops.
+                This project uses:
+              </p>
+              <div class="discussion-formula">\[\varepsilon=10^{-6}=0.000001\]</div>
+              <p>
+                This means the process stops only when the difference between \(x_{n+1}\) and \(x_n\) is
+                smaller than 0.000001. A smaller tolerance gives a more precise answer, but it may require
+                more iterations.
+              </p>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>8. What the iteration table means</h3>
+              <p>
+                The calculator table shows how the approximation changes each round. The column \(x_n\)
+                shows the current guess, \(f(x_n)\) shows how far the function is from zero, \(f'(x_n)\)
+                shows the slope, \(x_{n+1}\) shows the improved guess, and the error shows how much the
+                guess changed.
+              </p>
+              <div class="discussion-note">
+                When \(f(x_n)\) becomes close to 0 and the error becomes smaller than the tolerance, the
+                approximate root is accepted.
+              </div>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>9. When Newton-Raphson works well</h3>
+              <ul>
+                <li>The function is differentiable near the root.</li>
+                <li>The derivative \(f'(x_n)\) is not zero or extremely small.</li>
+                <li>The starting guess is reasonably close to the actual root.</li>
+                <li>The graph is not too flat or badly shaped near the selected guess.</li>
+              </ul>
+            </section>
+
+            <section class="discussion-topic warning-topic">
+              <h3>10. Common mistakes and warnings</h3>
+              <ul>
+                <li><strong>Wrong derivative:</strong> an incorrect \(f'(x)\) can lead to a wrong answer.</li>
+                <li><strong>Bad starting guess:</strong> the method may converge slowly, go to another root, or diverge.</li>
+                <li><strong>Zero derivative:</strong> division by zero makes the formula impossible to use.</li>
+                <li><strong>Forgetting parentheses:</strong> expressions such as \(\sin(x)\), \(\sqrt{x}\), and powers must be typed carefully.</li>
+              </ul>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>11. Input guide for the calculator</h3>
+              <p>
+                In the calculator, type the variable selected in the variable box, such as \(x\), \(y\), or \(z\).
+                You may use powers and common functions such as:
+              </p>
+              <div class="discussion-note">
+                Examples: <strong>x^3 - x - 2</strong>, <strong>cos(x) - x</strong>, <strong>sqrt(x) - 2</strong>,
+                <strong>exp(x) - 3</strong>, and <strong>log(x)</strong>.
+              </div>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>12. How to read the answer correctly</h3>
+              <p>
+                The final root is an approximation, not always an exact symbolic answer. For example, when the
+                calculator says \(x \approx 1.521380\), it means substituting that value into \(f(x)\) makes the
+                function very close to zero. The word <strong>approximate</strong> is important because numerical
+                methods usually stop based on a tolerance instead of producing an exact fraction or radical form.
+              </p>
+              <div class="discussion-note">
+                A good final answer should include the approximate root, the tolerance used, and whether the method
+                converged successfully.
+              </div>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>13. What convergence means</h3>
+              <p>
+                Convergence means the generated values \(x_0, x_1, x_2, \ldots\) are moving closer to a stable value.
+                In Newton-Raphson, this usually happens when each new tangent-line estimate lands nearer to the root.
+                If the values jump around, grow very large, repeat without improving, or reach the maximum iteration
+                limit, the method may not have converged for that chosen starting guess.
+              </p>
+              <p>
+                When convergence is successful, the error column usually gets smaller each row until it becomes less
+                than the tolerance.
+              </p>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>14. Why the derivative is required</h3>
+              <p>
+                The derivative \(f'(x)\) represents the slope of the curve at the current estimate. Newton-Raphson
+                uses this slope to decide the direction and size of the correction. A steep slope usually gives a
+                controlled correction, while a slope close to zero can create a very large correction because the
+                formula divides by \(f'(x_n)\).
+              </p>
+              <div class="discussion-formula">\[\text{correction}=\frac{f(x_n)}{f'(x_n)}\]</div>
+              <p>
+                This is why the calculator asks for both the function and the derivative, and why the auto-derivative
+                feature is helpful for avoiding manual derivative mistakes.
+              </p>
+            </section>
+
+            <section class="discussion-topic">
+              <h3>15. Quick checklist before solving</h3>
+              <ul>
+                <li>Make sure the equation is written as \(f(x)=0\).</li>
+                <li>Choose the correct variable: \(x\), \(y\), or \(z\).</li>
+                <li>Check that the derivative matches the function.</li>
+                <li>Use a reasonable starting guess near the expected root.</li>
+                <li>Use \(10^{-6}\) tolerance for this PIT requirement.</li>
+                <li>Confirm that the final error is smaller than the tolerance.</li>
+              </ul>
+            </section>
+
+          </div>
+        </div>
+      </aside>
+    </div>
 
     <section class="section" id="procedure">
       <div class="section-heading"><span class="section-number">2</span><div><h2>Step-by-Step Procedure</h2><p>The method repeats a tangent-based formula until the tolerance is satisfied.</p></div></div>

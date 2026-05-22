@@ -42,3 +42,10 @@ http://127.0.0.1:5000
 ## Safe Input Parsing
 
 The calculator validates expressions using Python AST and only allows selected mathematical functions, constants, and the selected variable. The derivative is generated using SymPy, while the numerical Newton-Raphson iterations are implemented manually.
+
+
+## Latest UI Additions
+
+- Added a theme-changing hanging page tab with a falling-page transition.
+- Added More NM Websites links for LU Decomposition, Antonio Rafael Dela Cruz, and Miguel Estenzo.
+- Added sparkle animation specifically to the LU Decomposition link.
