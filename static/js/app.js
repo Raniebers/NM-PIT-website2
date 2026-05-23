@@ -301,7 +301,6 @@ function buildFigureHtml(canvasId) {
             <div>
               <p class="graph-eyebrow">Visual analysis</p>
               <h4>Newton-Raphson convergence plot</h4>
-              <p class="muted graph-intro">This detailed figure follows the current website theme and shows the function curve, tangent-line corrections, iteration points, and the final approximate root.</p>
             </div>
             <div class="graph-legend" aria-label="Graph legend">
               <span><i class="legend-swatch legend-curve"></i>Function curve</span>
