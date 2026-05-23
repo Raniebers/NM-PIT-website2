@@ -2330,3 +2330,67 @@ body.theme-changing .footer {
     gap: 18px !important;
   }
 }
+
+.graph-shell{display:grid;gap:16px}.graph-panel-header{display:grid;gap:14px;align-items:start}.graph-panel-header h4{margin:4px 0 6px;font-size:1.35rem}.graph-eyebrow{margin:0;color:var(--sage);text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;font-weight:900}.graph-intro{margin:0}.graph-legend{display:flex;flex-wrap:wrap;gap:10px 14px}.graph-legend span{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#f3f8ed;border:1px solid rgba(93,138,84,.22);font-weight:800;color:var(--deep)}.legend-swatch{display:inline-block;width:26px;height:8px;border-radius:999px}.legend-curve{background:#36a7ff}.legend-tangent{background:#ffb83d}.legend-point{width:12px;height:12px;border-radius:50%;background:#ff9822}.legend-root{width:12px;height:12px;transform:rotate(45deg);border-radius:2px;background:#63df52}.graph-frame{border-radius:24px;overflow:hidden;border:1px solid rgba(93,138,84,.3);box-shadow:0 16px 34px rgba(6,19,11,.14)}.graph-canvas{width:100%;height:420px;display:block;border-radius:0;border:0;background:transparent}.graph-note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.graph-note{padding:12px 14px;border-radius:16px;background:#f8fbf2;border:1px solid rgba(93,138,84,.18);color:var(--muted)}.graph-note strong{color:var(--deep)}
+@media(max-width:760px){.graph-note-grid{grid-template-columns:1fr}.graph-panel-header h4{font-size:1.15rem}.graph-canvas{height:340px}}
+
+
+/* Theme-aware graph palette + zoom controls */
+:root{
+  --graph-bg-start:#08172f;
+  --graph-bg-end:#0d2350;
+  --graph-bg-glow:rgba(96, 180, 255, 0.16);
+  --graph-grid:rgba(255,255,255,0.10);
+  --graph-axis:rgba(255,255,255,0.45);
+  --graph-label:rgba(255,255,255,0.92);
+  --graph-curve:#36a7ff;
+  --graph-tangent:#ffb83d;
+  --graph-point:#ff9822;
+  --graph-root:#63df52;
+  --graph-root-stroke:#b5ff8a;
+}
+body.theme-bamboo{
+  --graph-bg-start:#071a12;
+  --graph-bg-end:#143724;
+  --graph-bg-glow:rgba(195,230,90,0.15);
+  --graph-curve:#67d0ff;
+  --graph-tangent:#f2c14f;
+  --graph-point:#ff9f1c;
+  --graph-root:#a6f35b;
+  --graph-root-stroke:#d6ffb7;
+}
+body.theme-moss{
+  --graph-bg-start:#16240f;
+  --graph-bg-end:#314a20;
+  --graph-bg-glow:rgba(193, 226, 104, 0.16);
+  --graph-curve:#8fd3ff;
+  --graph-tangent:#ffd166;
+  --graph-point:#ffb347;
+  --graph-root:#d7ff70;
+  --graph-root-stroke:#f2ffd1;
+}
+body.theme-teal{
+  --graph-bg-start:#062126;
+  --graph-bg-end:#0f4b57;
+  --graph-bg-glow:rgba(73, 210, 193, 0.18);
+  --graph-curve:#6fe8ff;
+  --graph-tangent:#ffe28a;
+  --graph-point:#ffc658;
+  --graph-root:#74f3bf;
+  --graph-root-stroke:#cbffe9;
+}
+body.theme-sage{
+  --graph-bg-start:#1b2415;
+  --graph-bg-end:#55653b;
+  --graph-bg-glow:rgba(180, 210, 124, 0.16);
+  --graph-curve:#8fccff;
+  --graph-tangent:#ffd97d;
+  --graph-point:#ffad48;
+  --graph-root:#ccf062;
+  --graph-root-stroke:#f2ffd6;
+}
+.graph-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.graph-zoom-label{font-weight:800;color:var(--muted);margin-right:2px}.graph-zoom-btn{min-width:42px}.graph-frame{overflow:auto}.graph-frame canvas{min-width:720px}
+
+.graph-zoom-hint{font-size:.9rem;color:var(--muted);font-weight:700;margin-left:8px}
+
+.graph-frame.zoomed{cursor:grab}.graph-frame.is-panning{cursor:grabbing;user-select:none}.graph-frame.is-panning canvas{pointer-events:none}

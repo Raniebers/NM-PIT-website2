@@ -202,6 +202,7 @@ def create_graph_data(
             line_right = xn + span * 0.3
             tangents.append(
                 {
+                    "iteration": item.get("n", len(tangents)),
                     "x0": xn,
                     "y0": fx,
                     "x1": line_left,

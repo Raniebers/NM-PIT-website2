@@ -14,6 +14,7 @@ const derivativeDetails = document.getElementById("derivativeDetails");
 
 const HISTORY_KEY = "nr_saved_solution_history_v4";
 let latestResult = null;
+const graphRegistry = new Map();
 
 if (navToggle && navLinks) {
   navToggle.addEventListener("click", () => navLinks.classList.toggle("show"));
@@ -295,8 +296,37 @@ function buildFigureHtml(canvasId) {
     <details class="result-details" id="figuresDetails">
       <summary>Figures and Graph</summary>
       <div id="figurePrintBlock">
-        <p class="muted">This plot shows the function curve and tangent-line approximations used by Newton-Raphson.</p>
-        <canvas class="graph-canvas" id="${canvasId}" width="900" height="420"></canvas>
+        <div class="graph-shell">
+          <div class="graph-panel-header">
+            <div>
+              <p class="graph-eyebrow">Visual analysis</p>
+              <h4>Newton-Raphson convergence plot</h4>
+              <p class="muted graph-intro">This detailed figure follows the current website theme and shows the function curve, tangent-line corrections, iteration points, and the final approximate root.</p>
+            </div>
+            <div class="graph-legend" aria-label="Graph legend">
+              <span><i class="legend-swatch legend-curve"></i>Function curve</span>
+              <span><i class="legend-swatch legend-tangent"></i>Tangent lines</span>
+              <span><i class="legend-swatch legend-point"></i>Iteration points</span>
+              <span><i class="legend-swatch legend-root"></i>Approximate root</span>
+            </div>
+          </div>
+          <div class="graph-toolbar">
+            <span class="graph-zoom-label">Zoom</span>
+            <button type="button" class="small-action graph-zoom-btn" data-graph-action="zoom-out" data-canvas-id="${canvasId}" aria-label="Zoom out graph">−</button>
+            <button type="button" class="small-action graph-zoom-btn" data-graph-action="zoom-in" data-canvas-id="${canvasId}" aria-label="Zoom in graph">+</button>
+            <button type="button" class="small-action graph-zoom-btn" data-graph-action="reset" data-canvas-id="${canvasId}">Reset</button>
+            
+          </div>
+          <div class="graph-frame" data-canvas-id="${canvasId}">
+            <canvas class="graph-canvas" id="${canvasId}" width="900" height="500"></canvas>
+          </div>
+          <div class="graph-note-grid">
+            <div class="graph-note"><strong>Curve:</strong> the main curve represents ${mathInline('f(x)')}.</div>
+            <div class="graph-note"><strong>Tangents:</strong> dashed lines show how Newton-Raphson jumps from one estimate to the next.</div>
+            <div class="graph-note"><strong>Iteration points:</strong> highlighted markers show the current points ${mathInline('(x_n,\,f(x_n))')}.</div>
+            <div class="graph-note"><strong>Root marker:</strong> the diamond marks the approximate root on the x-axis.</div>
+          </div>
+        </div>
       </div>
     </details>
   `;
@@ -372,6 +402,7 @@ function renderResult(data) {
   `;
 
   wireResultButtons();
+  initGraphControls(canvasId, data.graph);
   drawGraph(canvasId, data.graph);
   refreshMath(resultCard);
   triggerSolveEffect();
@@ -463,6 +494,114 @@ function getSelectedHistoryItem() {
   return history.find((item) => item.id === select.value);
 }
 
+function initGraphControls(canvasId, graph) {
+  graphRegistry.set(canvasId, { graph, zoom: 1, hoverPointer: null, dragState: null });
+  updateGraphCanvasSize(canvasId);
+
+  document.querySelectorAll(`.graph-zoom-btn[data-canvas-id="${canvasId}"]`).forEach((button) => {
+    button.addEventListener("click", () => {
+      adjustGraphZoom(canvasId, button.dataset.graphAction);
+    });
+  });
+
+  const frame = document.querySelector(`.graph-frame[data-canvas-id="${canvasId}"]`);
+  const canvas = document.getElementById(canvasId);
+
+  if (frame) {
+    frame.addEventListener("wheel", (event) => {
+      // Normal wheel movement scrolls the zoomed graph.
+      // Hold CTRL while using the wheel if you want wheel-based zoom.
+      if (!event.ctrlKey) return;
+
+      event.preventDefault();
+      if (event.deltaY < 0) adjustGraphZoom(canvasId, "zoom-in");
+      else adjustGraphZoom(canvasId, "zoom-out");
+    }, { passive: false });
+
+    frame.addEventListener("pointerdown", (event) => {
+      const entry = graphRegistry.get(canvasId);
+      if (!entry || entry.zoom <= 1.01) return;
+      entry.dragState = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        scrollLeft: frame.scrollLeft,
+        scrollTop: frame.scrollTop,
+      };
+      frame.classList.add("is-panning");
+      frame.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    });
+
+    frame.addEventListener("pointermove", (event) => {
+      const entry = graphRegistry.get(canvasId);
+      if (!entry?.dragState) return;
+      frame.scrollLeft = entry.dragState.scrollLeft - (event.clientX - entry.dragState.startX);
+      frame.scrollTop = entry.dragState.scrollTop - (event.clientY - entry.dragState.startY);
+    });
+
+    const stopPan = (event) => {
+      const entry = graphRegistry.get(canvasId);
+      if (!entry?.dragState) return;
+      if (event?.pointerId !== undefined && entry.dragState.pointerId !== event.pointerId) return;
+      entry.dragState = null;
+      frame.classList.remove("is-panning");
+      try { frame.releasePointerCapture(event.pointerId); } catch (error) {}
+    };
+
+    frame.addEventListener("pointerup", stopPan);
+    frame.addEventListener("pointercancel", stopPan);
+    frame.addEventListener("pointerleave", stopPan);
+  }
+
+  if (canvas) {
+    canvas.addEventListener("mousemove", (event) => {
+      const entry = graphRegistry.get(canvasId);
+      if (!entry) return;
+      entry.hoverPointer = getCanvasPointer(event, canvas);
+      drawGraph(canvasId, entry.graph);
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+      const entry = graphRegistry.get(canvasId);
+      if (!entry) return;
+      entry.hoverPointer = null;
+      drawGraph(canvasId, entry.graph);
+    });
+  }
+}
+
+function adjustGraphZoom(canvasId, action) {
+  const entry = graphRegistry.get(canvasId);
+  if (!entry) return;
+  if (action === "zoom-in") entry.zoom = Math.min(entry.zoom * 1.25, 8);
+  else if (action === "zoom-out") entry.zoom = Math.max(entry.zoom / 1.25, 1);
+  else entry.zoom = 1;
+  updateGraphCanvasSize(canvasId);
+  drawGraph(canvasId, entry.graph);
+}
+
+function updateGraphCanvasSize(canvasId) {
+  const entry = graphRegistry.get(canvasId);
+  const canvas = document.getElementById(canvasId);
+  const frame = document.querySelector(`.graph-frame[data-canvas-id="${canvasId}"]`);
+  if (!entry || !canvas) return;
+
+  const baseWidth = 900;
+  const baseHeight = 500;
+
+  if (entry.zoom <= 1.01) {
+    canvas.style.width = "100%";
+    canvas.style.height = "";
+    frame?.classList.remove("zoomed");
+    return;
+  }
+
+  canvas.style.width = `${Math.round(baseWidth * entry.zoom)}px`;
+  canvas.style.height = `${Math.round(baseHeight * entry.zoom)}px`;
+  frame?.classList.add("zoomed");
+}
+
 function drawGraph(canvasId, graph) {
   const canvas = document.getElementById(canvasId);
   if (!canvas || !graph || !graph.points || graph.points.length < 2) return;
@@ -470,6 +609,26 @@ function drawGraph(canvasId, graph) {
   const width = canvas.width;
   const height = canvas.height;
   ctx.clearRect(0, 0, width, height);
+
+  const margin = { top: 84, right: 34, bottom: 62, left: 72 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const styles = getComputedStyle(document.body);
+  const palette = {
+    bgStart: styles.getPropertyValue("--graph-bg-start").trim() || "#071329",
+    bgEnd: styles.getPropertyValue("--graph-bg-end").trim() || "#0b1d46",
+    glow: styles.getPropertyValue("--graph-bg-glow").trim() || "rgba(80, 200, 255, 0.16)",
+    grid: styles.getPropertyValue("--graph-grid").trim() || "rgba(255,255,255,0.10)",
+    axis: styles.getPropertyValue("--graph-axis").trim() || "rgba(255,255,255,0.45)",
+    label: styles.getPropertyValue("--graph-label").trim() || "rgba(255,255,255,0.9)",
+    curve: styles.getPropertyValue("--graph-curve").trim() || "#36a7ff",
+    tangent: styles.getPropertyValue("--graph-tangent").trim() || "rgba(255, 184, 61, 0.95)",
+    point: styles.getPropertyValue("--graph-point").trim() || "#ff9822",
+    root: styles.getPropertyValue("--graph-root").trim() || "#63df52",
+    rootStroke: styles.getPropertyValue("--graph-root-stroke").trim() || "#b5ff8a"
+  };
+  const entry = graphRegistry.get(canvasId);
+  const zoom = entry?.zoom || 1;
 
   const allX = graph.points.map((p) => p.x);
   const allY = graph.points.map((p) => p.y);
@@ -484,51 +643,281 @@ function drawGraph(canvasId, graph) {
   let minY = Math.min(...allY), maxY = Math.max(...allY);
   if (maxX === minX) { maxX += 1; minX -= 1; }
   if (maxY === minY) { maxY += 1; minY -= 1; }
-  const padX = (maxX - minX) * 0.08;
-  const padY = (maxY - minY) * 0.12;
+  const padX = (maxX - minX) * 0.12;
+  const padY = (maxY - minY) * 0.18;
   minX -= padX; maxX += padX; minY -= padY; maxY += padY;
 
-  const sx = (x) => ((x - minX) / (maxX - minX)) * (width - 80) + 45;
-  const sy = (y) => height - 45 - ((y - minY) / (maxY - minY)) * (height - 85);
-
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "#d9e3d2";
-  for (let i = 0; i <= 8; i++) {
-    const x = 45 + (width - 80) * i / 8;
-    ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, height - 45); ctx.stroke();
-    const y = 20 + (height - 65) * i / 8;
-    ctx.beginPath(); ctx.moveTo(45, y); ctx.lineTo(width - 35, y); ctx.stroke();
+  if (zoom > 1) {
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const halfSpanX = (maxX - minX) / (2 * zoom);
+    const halfSpanY = (maxY - minY) / (2 * zoom);
+    minX = cx - halfSpanX;
+    maxX = cx + halfSpanX;
+    minY = cy - halfSpanY;
+    maxY = cy + halfSpanY;
   }
 
-  ctx.strokeStyle = "#06130b";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(45, sy(0)); ctx.lineTo(width - 35, sy(0)); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(sx(0), 20); ctx.lineTo(sx(0), height - 45); ctx.stroke();
+  const sx = (x) => margin.left + ((x - minX) / (maxX - minX)) * plotWidth;
+  const sy = (y) => margin.top + plotHeight - ((y - minY) / (maxY - minY)) * plotHeight;
 
-  ctx.strokeStyle = "#0f2b1b";
-  ctx.lineWidth = 3;
+  const bg = ctx.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, palette.bgStart);
+  bg.addColorStop(0.55, palette.bgEnd);
+  bg.addColorStop(1, palette.bgStart);
+  ctx.fillStyle = bg;
+  roundRectPath(ctx, 0, 0, width, height, 24);
+  ctx.fill();
+
+  const glow = ctx.createRadialGradient(width * 0.78, height * 0.18, 10, width * 0.78, height * 0.18, width * 0.55);
+  glow.addColorStop(0, palette.glow);
+  glow.addColorStop(1, "rgba(80, 200, 255, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.save();
+  ctx.strokeStyle = palette.grid;
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 8; i++) {
+    const x = margin.left + (plotWidth * i) / 8;
+    ctx.beginPath(); ctx.moveTo(x, margin.top); ctx.lineTo(x, margin.top + plotHeight); ctx.stroke();
+  }
+  for (let i = 0; i <= 6; i++) {
+    const y = margin.top + (plotHeight * i) / 6;
+    ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(margin.left + plotWidth, y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // axes
+  ctx.strokeStyle = palette.axis;
+  ctx.lineWidth = 1.5;
+  const axisY = sy(0);
+  if (axisY >= margin.top && axisY <= margin.top + plotHeight) {
+    ctx.beginPath(); ctx.moveTo(margin.left, axisY); ctx.lineTo(margin.left + plotWidth, axisY); ctx.stroke();
+  }
+  const axisX = sx(0);
+  if (axisX >= margin.left && axisX <= margin.left + plotWidth) {
+    ctx.beginPath(); ctx.moveTo(axisX, margin.top); ctx.lineTo(axisX, margin.top + plotHeight); ctx.stroke();
+  }
+
+  // tick labels
+  ctx.fillStyle = palette.label;
+  ctx.font = "14px Arial";
+  ctx.textAlign = "center";
+  for (let i = 0; i <= 8; i++) {
+    const value = minX + ((maxX - minX) * i) / 8;
+    const x = margin.left + (plotWidth * i) / 8;
+    ctx.fillText(trimTick(value), x, height - 22);
+  }
+  ctx.textAlign = "right";
+  for (let i = 0; i <= 6; i++) {
+    const value = maxY - ((maxY - minY) * i) / 6;
+    const y = margin.top + (plotHeight * i) / 6;
+    ctx.fillText(trimTick(value), margin.left - 12, y + 4);
+  }
+
+  // titles
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "left";
+  ctx.font = "700 24px Arial";
+  ctx.fillText("Newton-Raphson Plot", 28, 34);
+  ctx.font = "15px Arial";
+  ctx.fillStyle = "rgba(255,255,255,0.75)";
+  ctx.fillText(`Function curve, tangent corrections, and convergence points • Zoom ${zoom.toFixed(2)}×`, 28, 58);
+  ctx.fillStyle = "rgba(255,255,255,0.86)";
+  ctx.font = "bold 17px Arial";
+  ctx.fillText("x", margin.left + plotWidth / 2, height - 8);
+  ctx.save();
+  ctx.translate(24, margin.top + plotHeight / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText("f(x)", 0, 0);
+  ctx.restore();
+
+  // function curve
+  ctx.strokeStyle = palette.curve;
+  ctx.lineWidth = 4;
   ctx.beginPath();
   graph.points.forEach((p, index) => {
-    if (index === 0) ctx.moveTo(sx(p.x), sy(p.y));
-    else ctx.lineTo(sx(p.x), sy(p.y));
+    const x = sx(p.x);
+    const y = sy(p.y);
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
   });
   ctx.stroke();
 
+  // tangent lines and iteration path
   graph.tangents.forEach((t, index) => {
-    ctx.strokeStyle = index % 2 === 0 ? "#5d8a54" : "#c3e65a";
-    ctx.setLineDash([8, 6]);
+    ctx.save();
+    ctx.strokeStyle = palette.tangent;
+    ctx.setLineDash([10, 7]);
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(sx(t.x1), sy(t.y1)); ctx.lineTo(sx(t.x2), sy(t.y2)); ctx.stroke();
-    ctx.setLineDash([]);
-    drawPoint(ctx, sx(t.x0), sy(t.y0), "#5d8a54");
-    drawPoint(ctx, sx(t.next_x), sy(0), "#c3e65a");
+    ctx.beginPath();
+    ctx.moveTo(sx(t.x1), sy(t.y1));
+    ctx.lineTo(sx(t.x2), sy(t.y2));
+    ctx.stroke();
+    ctx.restore();
+
+    // current point
+    drawPoint(ctx, sx(t.x0), sy(t.y0), palette.point, 7);
+    ctx.fillStyle = "#f4f7ff";
+    ctx.font = "bold 15px Arial";
+    ctx.textAlign = "left";
+    const label = `x${typeof t.iteration === "number" ? t.iteration : index}`;
+    ctx.fillText(label, sx(t.x0) + 8, sy(t.y0) - 12);
+
+    // guide to x-axis intercept
+    ctx.save();
+    ctx.strokeStyle = "rgba(110, 224, 98, 0.45)";
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(sx(t.next_x), sy(0));
+    ctx.lineTo(sx(t.next_x), sy(Math.min(maxY, t.y0)));
+    ctx.stroke();
+    ctx.restore();
   });
 
-  drawPoint(ctx, sx(graph.root), sy(0), "#06130b", 6);
-  ctx.fillStyle = "#06130b";
-  ctx.font = "bold 16px Arial";
-  ctx.fillText(`Root ≈ ${formatNumber(graph.root)}`, sx(graph.root) + 8, sy(0) - 8);
-  ctx.fillText("Function curve with Newton-Raphson tangent approximations", 55, 28);
+  // root diamond
+  drawDiamond(ctx, sx(graph.root), sy(0), 11, palette.root, palette.rootStroke);
+  ctx.fillStyle = "#dbffd1";
+  ctx.font = "bold 15px Arial";
+  ctx.textAlign = "left";
+  ctx.fillText(`Root ≈ ${formatNumber(graph.root)}`, sx(graph.root) + 14, sy(0) - 10);
+
+  const hoverDatum = entry?.hoverPointer ? getNearestGraphDatum(entry.hoverPointer, graph, sx, sy) : null;
+  if (hoverDatum) {
+    drawHoverMarker(ctx, hoverDatum, palette);
+    drawGraphTooltip(ctx, hoverDatum, width, height, palette);
+  }
+}
+
+function getCanvasPointer(event, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+    y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+  };
+}
+
+function getNearestGraphDatum(pointer, graph, sx, sy) {
+  let best = null;
+
+  const consider = (candidate, threshold) => {
+    const distance = Math.hypot(pointer.x - candidate.px, pointer.y - candidate.py);
+    if (distance > threshold) return;
+    if (!best || distance < best.distance) {
+      best = { ...candidate, distance };
+    }
+  };
+
+  graph.points.forEach((p) => {
+    consider({ type: "curve", x: p.x, y: p.y, px: sx(p.x), py: sy(p.y) }, 22);
+  });
+
+  graph.tangents.forEach((t, index) => {
+    const iter = typeof t.iteration === "number" ? t.iteration : index;
+    consider({ type: "iteration", iteration: iter, x: t.x0, y: t.y0, px: sx(t.x0), py: sy(t.y0) }, 18);
+  });
+
+  consider({ type: "root", x: graph.root, y: 0, px: sx(graph.root), py: sy(0) }, 18);
+
+  return best;
+}
+
+function drawHoverMarker(ctx, datum, palette) {
+  if (datum.type === "root") {
+    drawDiamond(ctx, datum.px, datum.py, 13, palette.root, "#ffffff");
+    return;
+  }
+
+  drawPoint(ctx, datum.px, datum.py, datum.type === "iteration" ? palette.point : "#ffffff", datum.type === "iteration" ? 8 : 5);
+  ctx.save();
+  ctx.strokeStyle = datum.type === "iteration" ? "#ffffff" : palette.curve;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(datum.px, datum.py, datum.type === "iteration" ? 11 : 8, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawGraphTooltip(ctx, datum, width, height, palette) {
+  const title = datum.type === "root"
+    ? "Approximate root"
+    : datum.type === "iteration"
+      ? `Iteration x${datum.iteration}`
+      : "Curve point";
+
+  const lines = datum.type === "root"
+    ? [`x ≈ ${formatNumber(datum.x)}`, `f(x) = ${formatNumber(datum.y)}`]
+    : [`x = ${formatNumber(datum.x)}`, `f(x) = ${formatNumber(datum.y)}`];
+
+  ctx.save();
+  ctx.font = "bold 14px Arial";
+  const titleWidth = ctx.measureText(title).width;
+  ctx.font = "13px Arial";
+  const lineWidths = lines.map((line) => ctx.measureText(line).width);
+  const boxWidth = Math.max(titleWidth, ...lineWidths) + 24;
+  const boxHeight = 66;
+
+  let boxX = datum.px + 14;
+  let boxY = datum.py - boxHeight - 16;
+  if (boxX + boxWidth > width - 16) boxX = datum.px - boxWidth - 14;
+  if (boxX < 16) boxX = 16;
+  if (boxY < 16) boxY = datum.py + 16;
+  if (boxY + boxHeight > height - 16) boxY = height - boxHeight - 16;
+
+  const fill = ctx.createLinearGradient(boxX, boxY, boxX + boxWidth, boxY + boxHeight);
+  fill.addColorStop(0, "rgba(9, 28, 63, 0.96)");
+  fill.addColorStop(1, "rgba(23, 59, 124, 0.92)");
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = "rgba(196, 232, 255, 0.88)";
+  ctx.lineWidth = 1.5;
+  roundRectPath(ctx, boxX, boxY, boxWidth, boxHeight, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 14px Arial";
+  ctx.fillText(title, boxX + 12, boxY + 20);
+  ctx.font = "13px Arial";
+  ctx.fillStyle = "#d8edff";
+  ctx.fillText(lines[0], boxX + 12, boxY + 40);
+  ctx.fillText(lines[1], boxX + 12, boxY + 57);
+  ctx.restore();
+}
+
+function roundRectPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function drawDiamond(ctx, x, y, size, fillColor, strokeColor) {
+  ctx.save();
+  ctx.fillStyle = fillColor;
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y - size);
+  ctx.lineTo(x + size, y);
+  ctx.lineTo(x, y + size);
+  ctx.lineTo(x - size, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function trimTick(value) {
+  const rounded = Math.abs(value) < 1e-9 ? 0 : value;
+  if (Math.abs(rounded) >= 1000 || (Math.abs(rounded) > 0 && Math.abs(rounded) < 0.01)) {
+    return rounded.toExponential(1);
+  }
+  return Number(rounded.toFixed(2)).toString();
 }
 
 function drawPoint(ctx, x, y, color, radius = 4) {
@@ -1167,6 +1556,13 @@ function applyTheme(themeName) {
   document.body.classList.remove(...themeOrder);
   document.body.classList.add(themeName);
   localStorage.setItem(THEME_KEY, themeName);
+  redrawAllGraphs();
+}
+
+function redrawAllGraphs() {
+  graphRegistry.forEach((entry, canvasId) => {
+    drawGraph(canvasId, entry.graph);
+  });
 }
 
 function showThemeBloom() {
